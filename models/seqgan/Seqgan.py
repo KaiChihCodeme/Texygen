@@ -13,6 +13,7 @@ from utils.oracle.OracleCfg import OracleCfg
 from utils.oracle.OracleLstm import OracleLstm
 from utils.text_process import *
 from utils.utils import *
+from utils.metrics.Bleu import Bleu
 
 
 class Seqgan(Gan):
@@ -284,7 +285,7 @@ class Seqgan(Gan):
             outfile.write(text_to_code(tokens, word_index_dict, self.sequence_length))
         return word_index_dict, index_word_dict
 
-    def init_real_metric(self):
+    def init_real_metric(self, test_real_file='data/testdata/test_coco.txt'):
         from utils.metrics.DocEmbSim import DocEmbSim
         docsim = DocEmbSim(oracle_file=self.oracle_file, generator_file=self.generator_file, num_vocabulary=self.vocab_size)
         self.add_metric(docsim)
@@ -293,12 +294,35 @@ class Seqgan(Gan):
         inll.set_name('nll-test')
         self.add_metric(inll)
 
+        bleu_2 = Bleu(test_text=self.test_file, real_text=test_real_file, gram=2)
+        bleu_2.set_name('Bleu-2')
+        self.add_metric(bleu_2)
+
+        bleu_3 = Bleu(test_text=self.test_file, real_text=test_real_file, gram=3)
+        bleu_3.set_name('Bleu-3')
+        self.add_metric(bleu_3)
+
+        bleu_4 = Bleu(test_text=self.test_file, real_text=test_real_file, gram=4)
+        bleu_4.set_name('Bleu-4')
+        self.add_metric(bleu_4)
+
+        bleu_5 = Bleu(test_text=self.test_file, real_text=test_real_file, gram=5)
+        bleu_5.set_name('Bleu-5')
+        self.add_metric(bleu_5)
+
 
     def train_real(self, data_loc=None):
         from utils.text_process import code_to_text
         from utils.text_process import get_tokenlized
         wi_dict, iw_dict = self.init_real_trainng(data_loc)
-        self.init_real_metric()
+
+        test_data_loc = None
+        if not data_loc:
+            test_data_loc = 'data/testdata/test_coco.txt'
+        elif data_loc == 'data/emnlp_news.txt':
+            test_data_loc = 'data/testdata/test_emnlp.txt'
+
+        self.init_real_metric(test_data_loc)
 
         def get_real_test_file(dict=iw_dict):
             with open(self.generator_file, 'r') as file:
@@ -321,7 +345,7 @@ class Seqgan(Gan):
             end = time()
             print('epoch:' + str(self.epoch) + '\t time:' + str(end - start))
             self.add_epoch()
-            if epoch % 5 == 0:
+            if epoch % 10 == 0:
                 generate_samples(self.sess, self.generator, self.batch_size, self.generate_num, self.generator_file)
                 get_real_test_file()
                 self.evaluate()
@@ -350,7 +374,7 @@ class Seqgan(Gan):
             end = time()
             self.add_epoch()
             print('epoch:' + str(self.epoch) + '\t time:' + str(end - start))
-            if epoch % 5 == 0 or epoch == self.adversarial_epoch_num - 1:
+            if epoch % 10 == 0 or epoch == self.adversarial_epoch_num - 1:
                 generate_samples(self.sess, self.generator, self.batch_size, self.generate_num, self.generator_file)
                 get_real_test_file()
                 self.evaluate()
