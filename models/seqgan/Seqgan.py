@@ -35,6 +35,7 @@ class Seqgan(Gan):
         self.oracle_file = 'save/oracle.txt'
         self.generator_file = 'save/generator.txt'
         self.test_file = 'save/test_file.txt'
+        self.test_log_path = 'save/output/'
 
     def init_metric(self):
         nll = Nll(data_loader=self.oracle_data_loader, rnn=self.oracle, sess=self.sess)
@@ -329,6 +330,16 @@ class Seqgan(Gan):
                 codes = get_tokenlized(self.generator_file)
             with open(self.test_file, 'w') as outfile:
                 outfile.write(code_to_text(codes=codes, dictionary=dict))
+
+            # STORE THE REAL OUTPUT
+            if test_data_loc == 'data/testdata/test_coco.txt':
+                test_log_file = self.test_log_path + 'seqgan_imagecoco.txt'
+                with open(test_log_file, 'w') as outfile:
+                    outfile.write(code_to_text(codes=codes, dictionary=dict))
+            elif test_data_loc == 'data/testdata/test_emnlp.txt':
+                test_log_file = self.test_log_path + 'seqgan_emnlp.txt'
+                with open(test_log_file, 'w') as outfile:
+                    outfile.write(code_to_text(codes=codes, dictionary=dict))
 
         self.sess.run(tf.global_variables_initializer())
 

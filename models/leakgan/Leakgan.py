@@ -76,6 +76,7 @@ class Leakgan(Gan):
         self.oracle_file = 'save/oracle.txt'
         self.generator_file = 'save/generator.txt'
         self.test_file = 'save/test_file.txt'
+        self.test_log_path = 'save/output/'
 
     def init_oracle_trainng(self, oracle=None):
         goal_out_size = sum(self.num_filters)
@@ -441,6 +442,16 @@ class Leakgan(Gan):
                 codes = get_tokenlized(self.generator_file)
             with open(self.test_file, 'w') as outfile:
                 outfile.write(code_to_text(codes=codes, dictionary=dict))
+
+            # STORE THE REAL OUTPUT
+            if test_data_loc == 'data/testdata/test_coco.txt':
+                test_log_file = self.test_log_path + 'leakgan_imagecoco.txt'
+                with open(test_log_file, 'w') as outfile:
+                    outfile.write(code_to_text(codes=codes, dictionary=dict))
+            elif test_data_loc == 'data/testdata/test_emnlp.txt':
+                test_log_file = self.test_log_path + 'leakgan_emnlp.txt'
+                with open(test_log_file, 'w') as outfile:
+                    outfile.write(code_to_text(codes=codes, dictionary=dict))
 
         self.sess.run(tf.global_variables_initializer())
 

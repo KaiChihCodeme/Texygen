@@ -29,6 +29,7 @@ class Mle(Gan):
         self.oracle_file = 'save/oracle.txt'
         self.generator_file = 'save/generator.txt'
         self.test_file = 'save/test_file.txt'
+        self.test_log_path = 'save/output/'
 
     def init_oracle_trainng(self, oracle=None):
         if oracle is None:
@@ -181,6 +182,16 @@ class Mle(Gan):
             with open(self.test_file, 'w') as outfile:
                 outfile.write(code_to_text(codes=codes, dictionary=dict))
 
+            # STORE THE REAL OUTPUT
+            if test_data_loc == 'data/testdata/test_coco.txt':
+                test_log_file = self.test_log_path + 'mle_imagecoco.txt'
+                with open(test_log_file, 'w') as outfile:
+                    outfile.write(code_to_text(codes=codes, dictionary=dict))
+            elif test_data_loc == 'data/testdata/test_emnlp.txt':
+                test_log_file = self.test_log_path + 'mle_emnlp.txt'
+                with open(test_log_file, 'w') as outfile:
+                    outfile.write(code_to_text(codes=codes, dictionary=dict))
+
         self.sess.run(tf.global_variables_initializer())
 
         self.pre_epoch_num = 80
@@ -196,11 +207,13 @@ class Mle(Gan):
             end = time()
             print('epoch:' + str(self.epoch) + '\t time:' + str(end - start))
             self.add_epoch()
-            if epoch % 10 == 0:  # change from 5 to 10
+            if epoch % 20 == 0:  # change from 5 to 10
                 generate_samples(self.sess, self.generator, self.batch_size, self.generate_num, self.generator_file)
                 get_real_test_file()
                 self.evaluate()
         generate_samples(self.sess, self.generator, self.batch_size, self.generate_num, self.generator_file)
+        get_real_test_file()
+        self.evaluate()
 
 
 
