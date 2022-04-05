@@ -33,7 +33,7 @@ def generate_samples_gen(sess, trainable_model, batch_size, generated_num, outpu
 
     codes = list()
     if output_file is not None:
-        with open(output_file, 'w') as fout:
+        with open(output_file, 'w', encoding='utf-8') as fout:
             for poem in generated_samples:
                 buffer = ' '.join([str(x) for x in poem]) + '\n'
                 fout.write(buffer)
@@ -52,7 +52,7 @@ class Leakgan(Gan):
     def __init__(self, oracle=None):
         super().__init__()
         # you can change parameters, generator here
-        self.vocab_size = 20
+        self.vocab_size = 5000  # 20
         self.emb_dim = 32
         self.hidden_dim = 32
         flags = tf.app.flags
@@ -68,7 +68,7 @@ class Leakgan(Gan):
         self.l2_reg_lambda = 0.2
         self.dropout_keep_prob = 0.75
         self.batch_size = 64
-        self.generate_num = 256
+        self.generate_num = 10000  # 256
         self.start_token = 0
         self.dis_embedding_dim = 64
         self.goal_size = 16
@@ -395,7 +395,7 @@ class Leakgan(Gan):
         tokens = get_tokenlized(data_loc)
         word_set = get_word_list(tokens)
         [word_index_dict, index_word_dict] = get_dict(word_set)
-        with open(self.oracle_file, 'w') as outfile:
+        with open(self.oracle_file, 'w', encoding='utf-8') as outfile:
             outfile.write(text_to_code(tokens, word_index_dict, self.sequence_length))
         return word_index_dict, index_word_dict
 
@@ -429,28 +429,26 @@ class Leakgan(Gan):
         from utils.text_process import get_tokenlized
         wi_dict, iw_dict = self.init_real_trainng(data_loc)
 
-        test_data_loc = None
-        if not data_loc:
-            test_data_loc = 'data/testdata/test_coco.txt'
-        elif data_loc == 'data/emnlp_news.txt':
+        test_data_loc = 'data/testdata/test_coco.txt'
+        if data_loc == 'data/emnlp_news.txt':
             test_data_loc = 'data/testdata/test_emnlp.txt'
 
         self.init_real_metric(test_data_loc)
 
         def get_real_test_file(dict=iw_dict):
-            with open(self.generator_file, 'r') as file:
+            with open(self.generator_file, 'r', encoding='utf-8') as file:
                 codes = get_tokenlized(self.generator_file)
-            with open(self.test_file, 'w') as outfile:
+            with open(self.test_file, 'w', encoding='utf-8') as outfile:
                 outfile.write(code_to_text(codes=codes, dictionary=dict))
 
             # STORE THE REAL OUTPUT
             if test_data_loc == 'data/testdata/test_coco.txt':
                 test_log_file = self.test_log_path + 'leakgan_imagecoco.txt'
-                with open(test_log_file, 'w') as outfile:
+                with open(test_log_file, 'w', encoding='utf-8') as outfile:
                     outfile.write(code_to_text(codes=codes, dictionary=dict))
             elif test_data_loc == 'data/testdata/test_emnlp.txt':
                 test_log_file = self.test_log_path + 'leakgan_emnlp.txt'
-                with open(test_log_file, 'w') as outfile:
+                with open(test_log_file, 'w', encoding='utf-8') as outfile:
                     outfile.write(code_to_text(codes=codes, dictionary=dict))
 
         self.sess.run(tf.global_variables_initializer())
@@ -504,7 +502,7 @@ class Leakgan(Gan):
                 end = time()
                 self.add_epoch()
                 print('epoch:' + str(epoch) + '--' + str(epoch_) + '\t time:' + str(end - start))
-                if epoch % 10 == 0 or epoch == self.adversarial_epoch_num - 1:
+                if epoch % 20 == 0 or epoch == self.adversarial_epoch_num - 1:
                     generate_samples_gen(self.sess, self.generator, self.batch_size, self.generate_num, self.generator_file)
                     get_real_test_file()
                     self.evaluate()

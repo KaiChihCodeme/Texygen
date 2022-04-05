@@ -34,7 +34,7 @@ class Bleu(Metrics):
     def get_reference(self):
         if self.reference is None:
             reference = list()
-            with open(self.real_data) as real_data:
+            with open(self.real_data, encoding='utf-8') as real_data:
                 for text in real_data:
                     text = nltk.word_tokenize(text)
                     reference.append(text)
@@ -48,7 +48,7 @@ class Bleu(Metrics):
         bleu = list()
         reference = self.get_reference()
         weight = tuple((1. / ngram for _ in range(ngram)))
-        with open(self.test_data) as test_data:
+        with open(self.test_data, encoding='utf-8') as test_data:
             for hypothesis in test_data:
                 hypothesis = nltk.word_tokenize(hypothesis)
                 bleu.append(nltk.translate.bleu_score.sentence_bleu(reference, hypothesis, weight,
@@ -72,7 +72,7 @@ class Bleu(Metrics):
         weight = tuple((1. / ngram for _ in range(ngram)))
         pool = Pool(os.cpu_count())
         result = list()
-        with open(self.test_data) as test_data:
+        with open(self.test_data, encoding='utf-8') as test_data:
             for hypothesis in test_data:
                 hypothesis = nltk.word_tokenize(hypothesis)
                 result.append(pool.apply_async(self.calc_bleu, args=(reference, hypothesis, weight)))

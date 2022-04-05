@@ -20,7 +20,7 @@ class Seqgan(Gan):
     def __init__(self, oracle=None):
         super().__init__()
         # you can change parameters, generator here
-        self.vocab_size = 20
+        self.vocab_size = 5000 # 20
         self.emb_dim = 32
         self.hidden_dim = 32
         self.sequence_length = 20
@@ -29,7 +29,7 @@ class Seqgan(Gan):
         self.l2_reg_lambda = 0.2
         self.dropout_keep_prob = 0.75
         self.batch_size = 64
-        self.generate_num = 128
+        self.generate_num = 10000  # 128
         self.start_token = 0
 
         self.oracle_file = 'save/oracle.txt'
@@ -317,10 +317,8 @@ class Seqgan(Gan):
         from utils.text_process import get_tokenlized
         wi_dict, iw_dict = self.init_real_trainng(data_loc)
 
-        test_data_loc = None
-        if not data_loc:
-            test_data_loc = 'data/testdata/test_coco.txt'
-        elif data_loc == 'data/emnlp_news.txt':
+        test_data_loc = 'data/testdata/test_coco.txt'
+        if data_loc == 'data/emnlp_news.txt':
             test_data_loc = 'data/testdata/test_emnlp.txt'
 
         self.init_real_metric(test_data_loc)
@@ -328,17 +326,17 @@ class Seqgan(Gan):
         def get_real_test_file(dict=iw_dict):
             with open(self.generator_file, 'r') as file:
                 codes = get_tokenlized(self.generator_file)
-            with open(self.test_file, 'w') as outfile:
+            with open(self.test_file, 'w', encoding='utf-8') as outfile:
                 outfile.write(code_to_text(codes=codes, dictionary=dict))
 
             # STORE THE REAL OUTPUT
             if test_data_loc == 'data/testdata/test_coco.txt':
                 test_log_file = self.test_log_path + 'seqgan_imagecoco.txt'
-                with open(test_log_file, 'w') as outfile:
+                with open(test_log_file, 'w', encoding='utf-8') as outfile:
                     outfile.write(code_to_text(codes=codes, dictionary=dict))
             elif test_data_loc == 'data/testdata/test_emnlp.txt':
                 test_log_file = self.test_log_path + 'seqgan_emnlp.txt'
-                with open(test_log_file, 'w') as outfile:
+                with open(test_log_file, 'w', encoding='utf-8') as outfile:
                     outfile.write(code_to_text(codes=codes, dictionary=dict))
 
         self.sess.run(tf.global_variables_initializer())
